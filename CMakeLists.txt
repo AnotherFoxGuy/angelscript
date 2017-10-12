@@ -19,6 +19,23 @@ set(PROJECT_VERSION ${ANGELSCRIPT_VERSION_MAJOR}.${ANGELSCRIPT_VERSION_MINOR}.${
 
 message(STATUS "Configuring angelscript ${PROJECT_VERSION}")
 
+# Needed for angelscript.pc.in
+SET(prefix ${CMAKE_INSTALL_PREFIX})
+SET(exec_prefix "\${prefix}")
+SET(libdir "\${exec_prefix}/lib")
+SET(bindir "\${exec_prefix}/bin")
+SET(includedir "\${prefix}/include")
+SET(PACKAGE_NAME "AngelScript")
+SET(PACKAGE_VERSION "${PROJECT_VERSION}")
+
+CONFIGURE_FILE(
+        "${angelscript_SOURCE_DIR}/angelscript.pc.in"
+        "${angelscript_BINARY_DIR}/angelscript.pc"
+        @ONLY)
+# install the PkgConfig file
+INSTALL(FILES "${angelscript_BINARY_DIR}/angelscript.pc" DESTINATION "lib/pkgconfig")
+
+
 find_package(Threads)
 
 set(ANGELSCRIPT_HEADERS
@@ -160,3 +177,44 @@ endif()
 
 # Don't override the default runtime output path to avoid conflicts when building for multiple target platforms
 #set(RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+
+# install the library
+INSTALL(TARGETS ${ANGELSCRIPT_LIBRARY_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        )
+
+# install the headers
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include FILES_MATCHING PATTERN "*.h")
+
+
+# cpack
+set(CPACK_PACKAGE_DESCRIPTION "AngelScript")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "AngelScript")
+set(CPACK_PACKAGE_NAME "angelscript")
+# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libogre-1.9-dev, libois-dev")
+set(CPACK_PACKAGE_CONTACT "Edgar@AnotherFoxGuy.com")
+set(CPACK_PACKAGE_VENDOR "Edgar@AnotherFoxGuy.com")
+SET(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+SET(CPACK_PACKAGE_VERSION_MAJOR ${ANGELSCRIPT_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${ANGELSCRIPT_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${ANGELSCRIPT_VERSION_PATCH})
+#set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/lgpl.txt")
+#set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.md")
+
+SET(CPACK_GENERATOR ZIP)
+IF (UNIX)
+    SET(CPACK_GENERATOR ${CPACK_GENERATOR};STGZ;TGZ;DEB;RPM)
+ENDIF (UNIX)
+IF (LINUX)
+    SET(CPACK_GENERATOR ${CPACK_GENERATOR};DEB;RPM)
+ENDIF (LINUX)
+IF (MSVC)
+    SET(CPACK_GENERATOR ${CPACK_GENERATOR};NSIS)
+ENDIF (MSVC)
+IF (APPLE)
+    SET(CPACK_GENERATOR ${CPACK_GENERATOR};PackageMaker)
+ENDIF (APPLE)
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_PROCESSOR}")
+include(CPack)
