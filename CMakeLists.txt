@@ -4,7 +4,7 @@ cmake_policy(SET CMP0003 NEW)
 
 project(angelscript)
 
-option(BUILD_SHARED_LIBS "Build shared library" OFF)
+option(BUILD_SHARED_LIBS "Build shared library" ON)
 
 if(APPLE)
     option(BUILD_FRAMEWORK "Build Framework bundle for OSX" OFF)
@@ -152,7 +152,7 @@ else()
 endif()
 set(ANGELSCRIPT_LIBRARY_NAME ${ANGELSCRIPT_LIBRARY_NAME} CACHE STRING "" FORCE)
 
-add_library(${ANGELSCRIPT_LIBRARY_NAME} ${ANGELSCRIPT_SOURCE} ${ANGELSCRIPT_HEADERS})
+add_library(${ANGELSCRIPT_LIBRARY_NAME} SHARED ${ANGELSCRIPT_SOURCE} ${ANGELSCRIPT_HEADERS})
 # Don't override the default library output path to avoid conflicts when building for multiple target platforms
 #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 target_link_libraries(${ANGELSCRIPT_LIBRARY_NAME} ${CMAKE_THREAD_LIBS_INIT})
