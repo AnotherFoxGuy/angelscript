@@ -8,8 +8,6 @@ class AngelscriptConan(ConanFile):
     url = "https://github.com/AnotherFoxGuy/angelscript/issues"
     description = " AngelScript is an extremely flexible cross-platform scripting library designed to allow applications to extend their functionality through external scripts."
     settings = "os", "compiler", "build_type", "arch"
-    #options = {"shared": [True, False]}
-    #default_options = "shared=False"
     generators = "cmake"
     exports_sources = "include*", "source*", "CMakeLists.txt", "angelscript.pc.in"
 
