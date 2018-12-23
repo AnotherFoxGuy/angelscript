@@ -3,13 +3,13 @@ from conans import ConanFile, CMake, tools
 
 class AngelscriptConan(ConanFile):
     name = "AngelScript"
-    version = "2.32"
+    version = "2.33"
     license = "zlib"
     url = "https://github.com/AnotherFoxGuy/angelscript/issues"
     description = " AngelScript is an extremely flexible cross-platform scripting library designed to allow applications to extend their functionality through external scripts."
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
-    exports_sources = "include*", "source*", "CMakeLists.txt", "angelscript.pc.in"
+    exports_sources = "cmake*", "include*", "source*", "CMakeLists.txt", "angelscript.pc.in"
 
     def build(self):
         cmake = CMake(self)
@@ -17,12 +17,8 @@ class AngelscriptConan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy("*.h", dst="include", src="include")
-        self.copy("*.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so*", dst="lib", keep_path=False)
-        self.copy("*.dylib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+        cmake = CMake(self)
+        cmake.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
