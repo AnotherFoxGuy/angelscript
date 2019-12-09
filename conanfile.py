@@ -7,7 +7,7 @@ class AngelscriptConan(ConanFile):
     license = "zlib"
     url = "https://github.com/AnotherFoxGuy/angelscript/issues"
     description = " AngelScript is an extremely flexible cross-platform scripting library designed to allow applications to extend their functionality through external scripts."
-    settings = "os", "compiler", "build_type", "arch"
+    settings = ("os", "build_type", "arch_build")
     generators = "cmake"
     exports_sources = "cmake*", "include*", "source*", "CMakeLists.txt", "angelscript.pc.in"
 
