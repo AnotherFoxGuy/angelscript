@@ -5,6 +5,10 @@ project(angelscript)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 option(AS_NO_EXCEPTIONS "Disable exception handling in script context" OFF)
 
+if(MSVC)
+    option(MSVC_COMPILE_FLAGS "Compiler flags to use with MSVC" "/MP")
+endif()
+
 if(APPLE)
     option(BUILD_FRAMEWORK "Build Framework bundle for OSX" OFF)
 endif()
@@ -15,6 +19,13 @@ set(ANGELSCRIPT_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(ANGELSCRIPT_VERSION_MINOR ${CMAKE_MATCH_2})
 set(ANGELSCRIPT_VERSION_PATCH ${CMAKE_MATCH_3})
 set(PROJECT_VERSION ${ANGELSCRIPT_VERSION_MAJOR}.${ANGELSCRIPT_VERSION_MINOR}.${ANGELSCRIPT_VERSION_PATCH})
+
+set(ARCHFLAGS "${CMAKE_SYSTEM_PROCESSOR}")
+if (APPLE AND NOT IOS)
+  if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    set(ARCHFLAGS "aarch64")
+  endif ()
+endif ()
 
 message(STATUS "Configuring angelscript ${PROJECT_VERSION}")
 
@@ -102,7 +113,7 @@ if(MSVC AND CMAKE_CL_64)
     endif()
 endif()
 
-if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
+if(${ARCHFLAGS} MATCHES "^arm")
     enable_language(ASM)
     if(CMAKE_ASM_COMPILER_WORKS)
         set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} source/as_callfunc_arm.cpp source/as_callfunc_arm_gcc.S)
@@ -112,8 +123,18 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
     endif()
 endif()
 
+if(${ARCHFLAGS} MATCHES "^aarch64")
+    enable_language(ASM)
+    if(CMAKE_ASM_COMPILER_WORKS)
+        set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} source/as_callfunc_arm64.cpp source/as_callfunc_arm64_gcc.S)
+        #set_property(SOURCE source/as_callfunc_arm64_gcc.S APPEND PROPERTY COMPILE_FLAGS " -Wa")
+    else()
+        message(FATAL ERROR "ARM target requires a working assembler")
+    endif()
+endif()
+
 if(MSVC)
-    set(CMAKE_DEBUG_POSTFIX "d")
+    set(CMAKE_DEBUG_POSTFIX "d")  
 endif()
 
 if(NOT BUILD_FRAMEWORK)
@@ -129,7 +150,7 @@ add_library(${ANGELSCRIPT_LIBRARY_NAME} ${ANGELSCRIPT_SOURCE} ${ANGELSCRIPT_HEAD
 target_include_directories(${ANGELSCRIPT_LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(MSVC)
-    target_compile_definitions(${ANGELSCRIPT_LIBRARY_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(${ANGELSCRIPT_LIBRARY_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS)    
 endif()
 
 target_compile_definitions(${ANGELSCRIPT_LIBRARY_NAME} PRIVATE -DANGELSCRIPT_EXPORT -D_LIB)
@@ -161,8 +182,8 @@ if(BUILD_FRAMEWORK)
     )
 endif()
 
-if(MSVC)
-    set_target_properties(${ANGELSCRIPT_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS "/MP")
+if(MSVC AND MSVC_COMPILE_FLAGS)
+	target_compile_options(${ANGELSCRIPT_LIBRARY_NAME} PRIVATE "${MSVC_COMPILE_FLAGS}")
 endif()
 
 # Don't override the default runtime output path to avoid conflicts when building for multiple target platforms
@@ -211,3 +232,4 @@ install(
 	DESTINATION ${ConfigPackageLocation}
 	COMPONENT Devel
 )
+
